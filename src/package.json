@@ -1,0 +1,15 @@
+{
+  "name": "gameon-room",
+  "private": true,
+  "devDependencies": {
+    "express": "*",
+    "morgan": "*"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {}
+}
