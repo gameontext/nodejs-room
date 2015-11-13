@@ -2,8 +2,7 @@
   "name": "gameon-room",
   "private": true,
   "devDependencies": {
-    "express": "*",
-    "morgan": "*"
+    "nodejs-websocket": "*"
   },
   "engines": {
     "node": ">=0.10.0"
