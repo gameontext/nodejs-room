@@ -66,7 +66,7 @@ var wsServer = ws.createServer(function (conn) {
 		
 		if (messageType === "roomHello")
 		{
-			sayHello(conn)
+			sayHello(conn, object.userId)
 		}
         if (messageType === "room")
         {
@@ -128,7 +128,7 @@ function sendNoCommands(conn, content, target) {
 		conn.sendText(messageText)
 }
 
-function sayHello(conn) {
+function sayHello(conn, target) {
 	var responseObject = {
         	type: "location",
         	name: "The Node Room",
@@ -142,7 +142,7 @@ function sayHello(conn) {
         }
         
         var sendMessageType = "player"
-        var sendTarget = object.userId
+        var sendTarget = target
         
         var messageText = sendMessageType + "," +
         					sendTarget + "," +
