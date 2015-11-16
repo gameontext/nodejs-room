@@ -96,7 +96,8 @@ function sendChatMessage(conn, username, content) {
 	var responseObject = {
         	type: "chat",
         	username: username,
-        	content: content
+        	content: content,
+        	bookmark: 92
         }
         
         var sendMessageType = "player"
