@@ -72,7 +72,7 @@ var wsServer = ws.createServer(function (conn) {
         {
         	if (object.content.indexOf('/') == 0)
         	{
-    			sendNoCommands(conn, object.userId, object.content)
+    			parseCommand(conn, object.userId, object.content)
         	}
     		else
 	    	{
@@ -109,17 +109,29 @@ function sendChatMessage(conn, username, content) {
 		
 		broadcast(messageText)
 }
+function sendUnknownCommand(conn, target, content) {
+	
+	if (content.substr(1,2) == "go")
+	{
+		console.log("They sent a go command!")
+	}
+	else
+	{
+		sendUnknownCommand(conn, target, content)
+	}
+	
+}
 
 //player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry Dave, I don't know how to do that"},"bookmark":25}
-function sendNoCommands(conn, target, content) {
-	console.log("This is a command!")
+function sendUnknownCommand(conn, target, content) {
+	console.log("Unknown command from user: " + content)
 	var responseObject = {
         	type: "event",
         	"content": {
         	}
         }
         
-		responseObject.content[target] = "I'm sorry Dave, I don't know how to do that!"
+		responseObject.content[target] = "JavaScript looked at your command, and barfed."
         var sendMessageType = "player"
         var sendTarget = target
         
