@@ -72,7 +72,7 @@ var wsServer = ws.createServer(function (conn) {
         {
         	if (object.content.indexOf('/') == 0)
         	{
-    			sendNoCommands(conn, object.content, object.userId)
+    			sendNoCommands(conn, object.userId, object.content)
         	}
     		else
 	    	{
@@ -111,14 +111,15 @@ function sendChatMessage(conn, username, content) {
 }
 
 //player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry Dave, I don't know how to do that"},"bookmark":25}
-function sendNoCommands(conn, content, target) {
+function sendNoCommands(conn, target, content) {
+	console.log("This is a command!")
 	var responseObject = {
         	type: "event",
         	"content": {
-        		target: "I'm sorry Dave, I don't know how to do that."
         	}
         }
         
+		responseObject.content[target] = "I'm sorry Dave, I don't know how to do that!"
         var sendMessageType = "player"
         var sendTarget = target
         
