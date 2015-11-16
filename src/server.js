@@ -13,7 +13,7 @@ var registration = {
     }
   ],
   attributes: {
-    endPoint: "ws://game-on.org/roomjs/",
+    endPoint: "ws://game-on.org/roomjs",
     startLocation: "false"
   }
 }
