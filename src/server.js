@@ -109,9 +109,11 @@ function sendChatMessage(conn, username, content) {
 		
 		broadcast(messageText)
 }
-function sendUnknownCommand(conn, target, content) {
+
+
+function parseCommand(conn, target, content) {
 	
-	if (content.substr(1,2) == "go")
+	if (content.substr(1,3) == "go ")
 	{
 		console.log("They sent a go command!")
 	}
@@ -131,7 +133,7 @@ function sendUnknownCommand(conn, target, content) {
         	}
         }
         
-		responseObject.content[target] = "JavaScript looked at your command, and barfed."
+		responseObject.content[target] = "Node.js looked at your command, and barfed."
         var sendMessageType = "player"
         var sendTarget = target
         
