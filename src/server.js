@@ -107,7 +107,7 @@ function sendChatMessage(conn, username, content) {
         					sendTarget + "," +
         					JSON.stringify(responseObject)
 		
-		conn.sendText(messageText)
+		broadcast(messageText)
 }
 
 //player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry Dave, I don't know how to do that"},"bookmark":25}
@@ -150,6 +150,12 @@ function sayHello(conn, target) {
         					JSON.stringify(responseObject)
 		
 		conn.sendText(messageText)
+}
+
+function broadcast(message) {
+	wsServer.connections.forEach(function (conn) {
+        conn.sendText(message)
+    })
 }
 
 console.log("The WebSocket server is listening...")
