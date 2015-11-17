@@ -118,19 +118,9 @@ async.series([
 		  {
 			  sawGoResponse = true
 			  console.log("The room told us we were leaving...")
-		  }
-		  else if (str == goodbyeAnnounce)
-		  {
-			  console.log("And announced that we were leaving.")
-			  sawGoAnnounce = true
-		  }
-		  
-	      if (sawGoResponse && sawGoAnnounce)
-	      {
 			  connection.close()
-			  console.log("Go W is working.")
 			  callback()
-	      }
+		  }
 	  })
   },
   function(callback){

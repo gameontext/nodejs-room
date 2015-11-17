@@ -186,7 +186,6 @@ function parseGoCommand(conn, target, username, content)
 		
 		conn.sendText(messageText)
 		
-		sayGoodbye(conn, target, username)
 	}
 	else
 	{
