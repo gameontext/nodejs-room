@@ -17,14 +17,15 @@ var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","cont
 var goDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go W"}'	
 var goResponse = 'playerLocation,dummy:AnonymousGoogleUser,{"type":"exit","exitId":"W","content":"You head West","bookmark":97}'
 	
-var goodbyeMessage = 'roomGoodbye,bsPlayer,{"username":"bsPlayer","userId":"bsPlayer"}'
-var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"bsPlayer leaves the room."},"bookmark":1001}'
-
+var goodbyeMessage = 'roomGoodbye,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser"}'
+var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"AnonymousGoogleUser leaves the room."},"bookmark":1001}'
 var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'	
 var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
 	
 var sawHello = false
 var sawAnnounce = false
+var sawGoResponse = false
+var sawGoAnnounce = false
 async.series([
   function(callback){
 	  var connection = ws.connect("ws://localhost:3000")
@@ -96,20 +97,6 @@ async.series([
   function(callback){
 	  var connection = ws.connect("ws://localhost:3000")
 	  connection.on("connect", function() {
-		  connection.sendText(goDirection)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == goResponse)
-		  {
-			  console.log("The room told us we were leaving")
-			  connection.close()
-			  callback()
-		  }
-	  })
-  },
-  function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
-	  connection.on("connect", function() {
 		  connection.sendText(goodbyeMessage)
 	  })
 	  connection.on("text", function(str) {
@@ -119,6 +106,31 @@ async.series([
 			  connection.close()
 			  callback()
 		  }
+	  })
+  },
+  function(callback){
+	  var connection = ws.connect("ws://localhost:3000")
+	  connection.on("connect", function() {
+		  connection.sendText(goDirection)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == goResponse)
+		  {
+			  sawGoResponse = true
+			  console.log("The room told us we were leaving...")
+		  }
+		  else if (str == goodbyeAnnounce)
+		  {
+			  console.log("And announced that we were leaving.")
+			  sawGoAnnounce = true
+		  }
+		  
+	      if (sawGoResponse && sawGoAnnounce)
+	      {
+			  connection.close()
+			  console.log("Go W is working.")
+			  callback()
+	      }
 	  })
   },
   function(callback){

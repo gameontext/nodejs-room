@@ -185,6 +185,8 @@ function parseGoCommand(conn, target, username, content)
 							JSON.stringify(messageObject)
 		
 		conn.sendText(messageText)
+		
+		sayGoodbye(conn, target, username)
 	}
 	else
 	{
