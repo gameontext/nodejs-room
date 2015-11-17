@@ -22,8 +22,14 @@ var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"AnonymousGoogleU
 var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'	
 var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
 
-var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits]"}}'
 var helpMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/help"}'
+var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits]"}}'
+	
+var inventoryMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/inventory"}'
+var inventoryReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"You may have been carrying something, but you lost it cause everything is so asynchronous."}}'
+
+var examineMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
+var examineReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"There\'s nothing in here to really examine."}}'
 	
 	
 var sawHello = false
@@ -150,6 +156,34 @@ async.series([
 		  if (str == helpReply)
 		  {
 			  console.log("And tells us the right help information.")
+			  connection.close()
+			  callback()
+		  }
+	  })
+  },
+  function(callback){
+	  var connection = ws.connect("ws://localhost:3000")
+	  connection.on("connect", function() {
+		  connection.sendText(inventoryMessage)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == inventoryReply)
+		  {
+			  console.log("Inventory works (such as it is).")
+			  connection.close()
+			  callback()
+		  }
+	  })
+  },
+  function(callback){
+	  var connection = ws.connect("ws://localhost:3000")
+	  connection.on("connect", function() {
+		  connection.sendText(examineMessage)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == examineReply)
+		  {
+			  console.log("Examining works.")
 			  connection.close()
 			  callback()
 		  }

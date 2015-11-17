@@ -130,6 +130,14 @@ function parseCommand(conn, target, username, content) {
 	{
 		sendHelp(conn, target, username)
 	}
+	else if (content.substr(1, 9) == "inventory")
+	{
+		sendInventory(conn, target, username)
+	}
+	else if (content.substr(1, 7) == "examine")
+	{
+		sendExamine(conn, target, username)
+	}
 	else
 	{
 		sendUnknownCommand(conn, target, content)
@@ -167,6 +175,46 @@ function sendHelp(conn, target, username)
 	}
 	
 	messageObject.content[target] = "The following commands are supported: [/help, /go, /exits]"
+	
+	var messageToSend = sendMessageType + "," +
+						sendTarget + "," + 
+						JSON.stringify(messageObject)
+
+	conn.sendText(messageToSend)
+}
+
+function sendInventory(conn, target, username)
+{
+	var sendTarget = target
+	var sendMessageType = "player"
+	var messageObject = {
+		type: "event",
+		bookmark: 2223,
+		content: {
+		}
+	}
+	
+	messageObject.content[target] = "You may have been carrying something, but you lost it cause everything is so asynchronous."
+	
+	var messageToSend = sendMessageType + "," +
+						sendTarget + "," + 
+						JSON.stringify(messageObject)
+
+	conn.sendText(messageToSend)
+}
+
+function sendExamine(conn, target, username)
+{
+	var sendTarget = target
+	var sendMessageType = "player"
+	var messageObject = {
+		type: "event",
+		bookmark: 2223,
+		content: {
+		}
+	}
+	
+	messageObject.content[target] = "There's nothing in here to really examine."
 	
 	var messageToSend = sendMessageType + "," +
 						sendTarget + "," + 
