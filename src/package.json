@@ -3,10 +3,12 @@
   "private": true,
   "devDependencies": {
     "nodejs-websocket": "*",
-    "async": "*"
+    "async": "*",
+    "winston": "*"
   },
   "dependencies": {
-  	"nodejs-websocket": "*"
+  	"nodejs-websocket": "*",
+  	"winston": "*"
   },
   "engines": {
     "node": ">=0.10.0"
