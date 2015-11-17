@@ -179,6 +179,7 @@ function parseGoCommand(conn, target, content)
 	}
 	else
 	{
+		console.log("That direction wasn't found; we're telling the user.")
 		//"player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry, but I'm not sure how I'm supposed to listplayers N"},"bookmark":130}
 		var sendTarget = target
 		var sendMessageType = "player"
@@ -190,7 +191,7 @@ function parseGoCommand(conn, target, content)
 			bookmark: 1002
 		}
 		
-		content[target] = "There isn't an exit in that direction, sir."
+		messageObject.content[target] = "There isn't an exit in that direction, genius."
 		
 		var messageText = sendMessageType + "," +
 							sendTarget + "," + 
