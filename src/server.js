@@ -27,7 +27,6 @@ var exits = [
    }
 ]
 
-console.log(JSON.stringify(registration))
 var options = {
   host: 'game-on.org',
   path: '/concierge/registerRoom',
@@ -53,10 +52,9 @@ req.write(JSON.stringify(registration));
 req.end();
 
 
-
-
 var wsServer = ws.createServer(function (conn) {
     conn.on("text", function (incoming) {
+    	console.log("RECEIVED: " + incoming)
 	    var typeEnd = incoming.indexOf(',')
 	    var targetEnd = incoming.indexOf(',', typeEnd+1)
 	
@@ -71,7 +69,7 @@ var wsServer = ws.createServer(function (conn) {
 		{
 			sayHello(conn, object.userId, object.username)
 		}
-        if (messageType === "room")
+		else if (messageType === "room")
         {
         	if (object.content.indexOf('/') == 0)
         	{
@@ -81,6 +79,10 @@ var wsServer = ws.createServer(function (conn) {
 	    	{
     			sendChatMessage(conn, object.username, object.content)
 	    	}
+        }
+        else if (messageType === "roomGoodbye")
+        {
+        	sayGoodbye(conn, object.userId, object.username)
         }
 		else
 		{
@@ -120,10 +122,33 @@ function parseCommand(conn, target, username, content) {
 	{
 		parseGoCommand(conn, target, username, content)
 	}
+	else if (content.substr(1, 5) == "exits")
+	{
+		sendExits(conn, target, username)
+	}
 	else
 	{
 		sendUnknownCommand(conn, target, content)
 	}
+}
+
+function sendExits(conn, target, username)
+{
+	var sendTarget = target
+	var sendMessageType = "player"
+	var messageObject = {
+		type: "exits",
+		bookmark: 2222,
+		content: {
+			W: "You see a door to the west that looks like it goes somewhere."
+		}
+	}
+	
+	var messageToSend = sendMessageType + "," +
+						sendTarget + "," + 
+						JSON.stringify(messageObject)
+
+	conn.sendText(messageToSend)
 }
 
 function parseGoCommand(conn, target, username, content)
@@ -160,22 +185,6 @@ function parseGoCommand(conn, target, username, content)
 							JSON.stringify(messageObject)
 		
 		conn.sendText(messageText)
-		
-		console.log("And announcing that \"" + username + "\" has left the room.")
-		var broadcastMessageType = "player"
-		var broadcastMessageTarget = "*"
-		var broadcastMessageObject = {
-			type: "event",
-			content: {
-				"*": username + " leaves the room."
-			},
-			bookmark: 1001
-		}
-		var broadcastMessage = broadcastMessageType + "," +
-								broadcastMessageTarget + "," +
-								JSON.stringify(broadcastMessageObject)
-	
-		broadcast(broadcastMessage)
 	}
 	else
 	{
@@ -218,6 +227,24 @@ function sendUnknownCommand(conn, target, content) {
         					JSON.stringify(responseObject)
 		
 		conn.sendText(messageText)
+}
+
+function sayGoodbye(conn, target, username) {
+	console.log("Announcing that \"" + username + "\" has left the room.")
+	var broadcastMessageType = "player"
+	var broadcastMessageTarget = "*"
+	var broadcastMessageObject = {
+		type: "event",
+		content: {
+			"*": username + " leaves the room."
+		},
+		bookmark: 1001
+	}
+	var broadcastMessage = broadcastMessageType + "," +
+							broadcastMessageTarget + "," +
+							JSON.stringify(broadcastMessageObject)
+
+	broadcast(broadcastMessage)
 }
 
 function sayHello(conn, target, username) {
