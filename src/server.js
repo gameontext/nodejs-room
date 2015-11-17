@@ -145,6 +145,7 @@ function parseGoCommand(conn, target, content)
 	
 	if (found)
 	{
+		console.log("That direction exists, telling \"" + target + "\" that they've gone that direction.")
 		var sendTarget = target
 		var sendMessageType = "playerLocation"
 		var messageObject = {
@@ -159,11 +160,45 @@ function parseGoCommand(conn, target, content)
 							JSON.stringify(messageObject)
 		
 		conn.sendText(messageText)
+		
+		console.log("And announcing that \"" + username + "\" has left the room.")
+		var broadcastMessageType = "player"
+		var broadcastMessageTarget = "*"
+		var broadcastMessageObject = {
+			type: "event",
+			content: {
+				"*": username + " leaves the room."
+			},
+			bookmark: 1001
+		}
+		var broadcastMessage = broadcastMessageType + "," +
+								broadcastMessageTarget + "," +
+								JSON.stringify(broadcastMessageObject)
+	
+		broadcast(broadcastMessage)
 	}
 	else
 	{
+		//"player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry, but I'm not sure how I'm supposed to listplayers N"},"bookmark":130}
+		var sendTarget = target
+		var sendMessageType = "player"
+		var messageObject = {
+			type: "event",
+			content: {
+				
+			},
+			bookmark: 1002
+		}
 		
+		content[target] = "There isn't an exit in that direction, sir."
+		
+		var messageText = sendMessageType + "," +
+							sendTarget + "," + 
+							JSON.stringify(messageObject)
+		
+		conn.sendText(messageText)
 	}
+	
 }
 
 function sendUnknownCommand(conn, target, content) {
