@@ -69,7 +69,7 @@ var wsServer = ws.createServer(function (conn) {
 		
 		if (messageType === "roomHello")
 		{
-			sayHello(conn, object.userId)
+			sayHello(conn, object.userId, object.username)
 		}
         if (messageType === "room")
         {
@@ -113,7 +113,6 @@ function sendChatMessage(conn, username, content) {
 		
 		broadcast(messageText)
 }
-
 
 function parseCommand(conn, target, content) {
 	
@@ -186,28 +185,45 @@ function sendUnknownCommand(conn, target, content) {
 		conn.sendText(messageText)
 }
 
-function sayHello(conn, target) {
+function sayHello(conn, target, username) {
 	console.log("Saying hello to \"" + target + "\"")
 	var responseObject = {
-        	type: "location",
-        	name: "The Node Room",
-        	description: "This room is filled with little JavaScripts running around everywhere.",
-        	exits: {
-        		"W": "You see a door to the west that looks like it goes somewhere."
-        	},
-        	pockets: [],
-        	objects: [],
-        	bookmark: 5
-        }
-        
-        var sendMessageType = "player"
-        var sendTarget = target
-        
-        var messageText = sendMessageType + "," +
-        					sendTarget + "," +
-        					JSON.stringify(responseObject)
-		
-		conn.sendText(messageText)
+    	type: "location",
+    	name: "The Node Room",
+    	description: "This room is filled with little JavaScripts running around everywhere.",
+    	exits: {
+    		"W": "You see a door to the west that looks like it goes somewhere."
+    	},
+    	pockets: [],
+    	objects: [],
+    	bookmark: 5
+    }
+    
+    var sendMessageType = "player"
+    var sendTarget = target
+    
+    var messageText = sendMessageType + "," +
+    					sendTarget + "," +
+    					JSON.stringify(responseObject)
+	
+	conn.sendText(messageText)
+	
+	console.log("And announcing that \"" + username + "\" has arrived.")
+	//player,*,{"type":"event","content":{"*":"AnonymousGoogleUser enters the room."},"bookmark":98}
+	var broadcastMessageType = "player"
+	var broadcastMessageTarget = "*"
+	var broadcastMessageObject = {
+		type: "event",
+		content: {
+			"*": username + " enters the room."
+		},
+		bookmark: 51
+	}
+	var broadcastMessage = broadcastMessageType + "," +
+							broadcastMessageTarget + "," +
+							JSON.stringify(broadcastMessageObject)
+
+	broadcast(broadcastMessage)
 }
 
 function broadcast(message) {
