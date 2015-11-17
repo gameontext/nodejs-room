@@ -2,13 +2,16 @@
   "name": "gameon-room",
   "private": true,
   "devDependencies": {
-    "nodejs-websocket": "*"
+    "nodejs-websocket": "*",
+    "async": "*"
+  },
+  "dependencies": {
+  	"nodejs-websocket": "*"
   },
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
     "test": "grunt test"
-  },
-  "dependencies": {}
+  }
 }

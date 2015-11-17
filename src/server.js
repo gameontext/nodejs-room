@@ -1,7 +1,16 @@
 var ws = require("nodejs-websocket")
 var http = require("http")
+var winston = require('winston');
 
-console.log("Registering with the concierge...")
+var logger = new winston.Logger({
+    level: 'debug',
+    transports: [
+      new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: './access.log' })
+    ]
+  });
+
+logger.info("Registering with the concierge...")
 
 var registration = {
   roomName: "TheNodeRoom",
@@ -17,6 +26,8 @@ var registration = {
     startLocation: "false"
   }
 }
+
+logger.debug("Registration object: " + JSON.stringify(registration))
 
 var exits = [
  {
@@ -43,7 +54,7 @@ callback = function(response) {
   });
 
   response.on('end', function () {
-    console.log("Received response: " + str);
+    logger.debug("Received response: " + str);
   });
 }
 var req = http.request(options, callback);
@@ -54,7 +65,7 @@ req.end();
 
 var wsServer = ws.createServer(function (conn) {
     conn.on("text", function (incoming) {
-    	console.log("RECEIVED: " + incoming)
+    	logger.debug("RECEIVED: " + incoming)
 	    var typeEnd = incoming.indexOf(',')
 	    var targetEnd = incoming.indexOf(',', typeEnd+1)
 	
@@ -63,7 +74,7 @@ var wsServer = ws.createServer(function (conn) {
 		var objectStr = incoming.substr(targetEnd+1)
 		var object = JSON.parse(objectStr)
 		
-		console.log("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
+		logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
 		
 		if (messageType === "roomHello")
 		{
@@ -92,13 +103,13 @@ var wsServer = ws.createServer(function (conn) {
 		
     })
     conn.on("close", function (code, reason) {
-        console.log("Connection closed")
+        logger.debug("Connection closed.")
     })
 }).listen(3000)
 
 
 function sendChatMessage(conn, username, content) {
-	console.log(username + " sent chat message \"" + content + "\"")
+	logger.info(username + " sent chat message \"" + content + "\"")
 	var responseObject = {
         	type: "chat",
         	username: username,
@@ -146,6 +157,7 @@ function parseCommand(conn, target, username, content) {
 
 function sendExits(conn, target, username)
 {
+	logger.debug("Target \"" + target + "\" asked for exits.")
 	var sendTarget = target
 	var sendMessageType = "player"
 	var messageObject = {
@@ -165,6 +177,7 @@ function sendExits(conn, target, username)
 
 function sendHelp(conn, target, username)
 {
+	logger.debug("Target \"" + target + "\" asked for info.")
 	var sendTarget = target
 	var sendMessageType = "player"
 	var messageObject = {
@@ -185,6 +198,7 @@ function sendHelp(conn, target, username)
 
 function sendInventory(conn, target, username)
 {
+	logger.debug("Target \"" + target + "\" asked for inventory.")
 	var sendTarget = target
 	var sendMessageType = "player"
 	var messageObject = {
@@ -205,6 +219,7 @@ function sendInventory(conn, target, username)
 
 function sendExamine(conn, target, username)
 {
+	logger.debug("Target \"" + target + "\" asked for examination.")
 	var sendTarget = target
 	var sendMessageType = "player"
 	var messageObject = {
@@ -226,7 +241,7 @@ function sendExamine(conn, target, username)
 function parseGoCommand(conn, target, username, content)
 {
 	var exitName = content.substr(4)
-	console.log("Player \"" + username + "\" wants to go direction \"" + exitName + "\"")
+	logger.info("Player \"" + username + "\" wants to go direction \"" + exitName + "\"")
 	
 	var found = false
 	var myexit = {}
@@ -242,7 +257,7 @@ function parseGoCommand(conn, target, username, content)
 	
 	if (found)
 	{
-		console.log("That direction exists, telling \"" + username + "\" that they've gone that direction.")
+		logger.info("That direction exists, telling \"" + username + "\" that they've gone that direction.")
 		var sendTarget = target
 		var sendMessageType = "playerLocation"
 		var messageObject = {
@@ -261,7 +276,7 @@ function parseGoCommand(conn, target, username, content)
 	}
 	else
 	{
-		console.log("That direction wasn't found; we're telling the user.")
+		logger.info("That direction wasn't found; we're telling the user.")
 		var sendTarget = target
 		var sendMessageType = "player"
 		var messageObject = {
@@ -272,7 +287,7 @@ function parseGoCommand(conn, target, username, content)
 			bookmark: 1002
 		}
 		
-		messageObject.content[target] = "There isn't an exit in that direction, genius."
+		messageObject.content[target] = "There isn't an exit with that name, genius."
 		
 		var messageText = sendMessageType + "," +
 							sendTarget + "," + 
@@ -284,7 +299,7 @@ function parseGoCommand(conn, target, username, content)
 }
 
 function sendUnknownCommand(conn, target, content) {
-	console.log("Unknown command from user: " + content)
+	logger.info("Unknown command from user: " + content)
 	var responseObject = {
         	type: "event",
         	"content": {
@@ -303,7 +318,7 @@ function sendUnknownCommand(conn, target, content) {
 }
 
 function sayGoodbye(conn, target, username) {
-	console.log("Announcing that \"" + username + "\" has left the room.")
+	logger.debug("Announcing that \"" + username + "\" has left the room.")
 	var broadcastMessageType = "player"
 	var broadcastMessageTarget = "*"
 	var broadcastMessageObject = {
@@ -321,7 +336,7 @@ function sayGoodbye(conn, target, username) {
 }
 
 function sayHello(conn, target, username) {
-	console.log("Saying hello to \"" + target + "\"")
+	logger.info("Saying hello to \"" + target + "\"")
 	var responseObject = {
     	type: "location",
     	name: "The Node Room",
@@ -343,7 +358,7 @@ function sayHello(conn, target, username) {
 	
 	conn.sendText(messageText)
 	
-	console.log("And announcing that \"" + username + "\" has arrived.")
+	logger.debug("And announcing that \"" + username + "\" has arrived.")
 	var broadcastMessageType = "player"
 	var broadcastMessageTarget = "*"
 	var broadcastMessageObject = {
@@ -366,4 +381,4 @@ function broadcast(message) {
     })
 }
 
-console.log("The WebSocket server is listening...")
+logger.info("The WebSocket server is listening...")

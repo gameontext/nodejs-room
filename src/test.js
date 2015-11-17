@@ -12,7 +12,7 @@ var unknownCommand = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId
 var unknownCmdResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"Node.js looked at your command, and barfed."}}'
 
 var unknownDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go E"}'	
-var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"There isn\'t an exit in that direction, genius."},"bookmark":1002}'
+var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"There isn\'t an exit with that name, genius."},"bookmark":1002}'
 
 var goDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go W"}'	
 var goResponse = 'playerLocation,dummy:AnonymousGoogleUser,{"type":"exit","exitId":"W","content":"You head West","bookmark":97}'
@@ -96,6 +96,8 @@ async.series([
 		  connection.sendText(unknownDirection)
 	  })
 	  connection.on("text", function(str) {
+		  console.log(str)
+		  console.log(unknownDirResponse)
 		  if (str == unknownDirResponse)
 		  {
 			  console.log("When we send an unknown direction, it cusses us out.")
