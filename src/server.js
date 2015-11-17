@@ -18,6 +18,15 @@ var registration = {
   }
 }
 
+var exits = [
+ {
+     name: "W",
+     longName: "West",
+     room: "RecRoom",
+     description: "You see a door to the west that looks like it goes somewhere."
+   }
+]
+
 console.log(JSON.stringify(registration))
 var options = {
   host: 'game-on.org',
@@ -48,21 +57,15 @@ req.end();
 
 var wsServer = ws.createServer(function (conn) {
     conn.on("text", function (incoming) {
-        console.log("------\nReceived: "+ incoming)
-	        
 	    var typeEnd = incoming.indexOf(',')
 	    var targetEnd = incoming.indexOf(',', typeEnd+1)
 	
-		console.log(incoming)
 		var messageType = incoming.substr(0,typeEnd)
 		var target = incoming.substr(typeEnd+1, targetEnd-typeEnd-1)
 		var objectStr = incoming.substr(targetEnd+1)
 		var object = JSON.parse(objectStr)
-		console.log("Message Type: " + messageType)
-		console.log("Target: " + target)
-		console.log("ObjectStr: " + objectStr)
-		console.log("Object: " + object.username)
 		
+		console.log("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
 		
 		if (messageType === "roomHello")
 		{
@@ -93,6 +96,7 @@ var wsServer = ws.createServer(function (conn) {
 
 
 function sendChatMessage(conn, username, content) {
+	console.log(username + " sent chat message \"" + content + "\"")
 	var responseObject = {
         	type: "chat",
         	username: username,
@@ -115,16 +119,54 @@ function parseCommand(conn, target, content) {
 	
 	if (content.substr(1,3) == "go ")
 	{
-		console.log("They sent a go command!")
+		parseGoCommand(conn, target, content)
 	}
 	else
 	{
 		sendUnknownCommand(conn, target, content)
 	}
-	
 }
 
-//player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry Dave, I don't know how to do that"},"bookmark":25}
+function parseGoCommand(conn, target, content)
+{
+	var exitName = content.substr(4)
+	console.log("Player \"" + target + "\" wants to go direction \"" + exitName + "\"")
+	
+	var found = false
+	var myexit = {}
+	for (var j=0;j<exits.length;j++)
+	{
+		if (exits[j].name === exitName)
+		{
+			found = true
+			myexit = exits[j]
+			break;
+		}
+	}
+	
+	if (found)
+	{
+		var sendTarget = target
+		var sendMessageType = "playerLocation"
+		var messageObject = {
+			type: "exit",
+			exitId: myexit.name,
+			content: "You head " + myexit.longName,
+			bookmark: 97
+		}
+		
+		var messageText = sendMessageType + "," +
+							sendTarget + "," + 
+							JSON.stringify(messageObject)
+		
+		conn.sendText(messageText)
+	}
+	else
+	{
+		
+	}
+}
+
 function sendUnknownCommand(conn, target, content) {
 	console.log("Unknown command from user: " + content)
 	var responseObject = {
@@ -145,6 +187,7 @@ function sendUnknownCommand(conn, target, content) {
 }
 
 function sayHello(conn, target) {
+	console.log("Saying hello to \"" + target + "\"")
 	var responseObject = {
         	type: "location",
         	name: "The Node Room",
