@@ -21,6 +21,10 @@ var goodbyeMessage = 'roomGoodbye,TheNodeRoom,{"username":"AnonymousGoogleUser",
 var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"AnonymousGoogleUser leaves the room."},"bookmark":1001}'
 var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'	
 var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
+
+var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits]"}}'
+var helpMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/help"}'
+	
 	
 var sawHello = false
 var sawAnnounce = false
@@ -132,6 +136,20 @@ async.series([
 		  if (str == exitsReply)
 		  {
 			  console.log("The room told us the right exits.")
+			  connection.close()
+			  callback()
+		  }
+	  })
+  },
+  function(callback){
+	  var connection = ws.connect("ws://localhost:3000")
+	  connection.on("connect", function() {
+		  connection.sendText(helpMessage)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == helpReply)
+		  {
+			  console.log("And tells us the right help information.")
 			  connection.close()
 			  callback()
 		  }

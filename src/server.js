@@ -126,6 +126,10 @@ function parseCommand(conn, target, username, content) {
 	{
 		sendExits(conn, target, username)
 	}
+	else if (content.substr(1, 4) == "help")
+	{
+		sendHelp(conn, target, username)
+	}
 	else
 	{
 		sendUnknownCommand(conn, target, content)
@@ -143,6 +147,26 @@ function sendExits(conn, target, username)
 			W: "You see a door to the west that looks like it goes somewhere."
 		}
 	}
+	
+	var messageToSend = sendMessageType + "," +
+						sendTarget + "," + 
+						JSON.stringify(messageObject)
+
+	conn.sendText(messageToSend)
+}
+
+function sendHelp(conn, target, username)
+{
+	var sendTarget = target
+	var sendMessageType = "player"
+	var messageObject = {
+		type: "event",
+		bookmark: 2223,
+		content: {
+		}
+	}
+	
+	messageObject.content[target] = "The following commands are supported: [/help, /go, /exits]"
 	
 	var messageToSend = sendMessageType + "," +
 						sendTarget + "," + 
