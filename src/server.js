@@ -161,7 +161,7 @@ function parseGoCommand(conn, target, content)
 		
 		conn.sendText(messageText)
 		
-		console.log("And announcing that \"" + username + "\" has left the room.")
+		console.log("And announcing that \"" + target + "\" has left the room.")
 		var broadcastMessageType = "player"
 		var broadcastMessageTarget = "*"
 		var broadcastMessageObject = {
@@ -180,7 +180,6 @@ function parseGoCommand(conn, target, content)
 	else
 	{
 		console.log("That direction wasn't found; we're telling the user.")
-		//"player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"I'm sorry, but I'm not sure how I'm supposed to listplayers N"},"bookmark":130}
 		var sendTarget = target
 		var sendMessageType = "player"
 		var messageObject = {
@@ -245,7 +244,6 @@ function sayHello(conn, target, username) {
 	conn.sendText(messageText)
 	
 	console.log("And announcing that \"" + username + "\" has arrived.")
-	//player,*,{"type":"event","content":{"*":"AnonymousGoogleUser enters the room."},"bookmark":98}
 	var broadcastMessageType = "player"
 	var broadcastMessageTarget = "*"
 	var broadcastMessageObject = {
