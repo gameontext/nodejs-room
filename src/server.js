@@ -75,7 +75,7 @@ var wsServer = ws.createServer(function (conn) {
         {
         	if (object.content.indexOf('/') == 0)
         	{
-    			parseCommand(conn, object.userId, object.content)
+    			parseCommand(conn, object.userId, object.username, object.content)
         	}
     		else
 	    	{
@@ -114,11 +114,11 @@ function sendChatMessage(conn, username, content) {
 		broadcast(messageText)
 }
 
-function parseCommand(conn, target, content) {
+function parseCommand(conn, target, username, content) {
 	
 	if (content.substr(1,3) == "go ")
 	{
-		parseGoCommand(conn, target, content)
+		parseGoCommand(conn, target, username, content)
 	}
 	else
 	{
@@ -126,10 +126,10 @@ function parseCommand(conn, target, content) {
 	}
 }
 
-function parseGoCommand(conn, target, content)
+function parseGoCommand(conn, target, username, content)
 {
 	var exitName = content.substr(4)
-	console.log("Player \"" + target + "\" wants to go direction \"" + exitName + "\"")
+	console.log("Player \"" + username + "\" wants to go direction \"" + exitName + "\"")
 	
 	var found = false
 	var myexit = {}
@@ -145,7 +145,7 @@ function parseGoCommand(conn, target, content)
 	
 	if (found)
 	{
-		console.log("That direction exists, telling \"" + target + "\" that they've gone that direction.")
+		console.log("That direction exists, telling \"" + username + "\" that they've gone that direction.")
 		var sendTarget = target
 		var sendMessageType = "playerLocation"
 		var messageObject = {
@@ -161,7 +161,7 @@ function parseGoCommand(conn, target, content)
 		
 		conn.sendText(messageText)
 		
-		console.log("And announcing that \"" + target + "\" has left the room.")
+		console.log("And announcing that \"" + username + "\" has left the room.")
 		var broadcastMessageType = "player"
 		var broadcastMessageTarget = "*"
 		var broadcastMessageObject = {
