@@ -76,6 +76,9 @@ var wsServer = ws.createServer(function (conn) {
 		
 		logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
 		
+		if (target != "TheNodeRoom")
+			return
+		
 		if (messageType === "roomHello")
 		{
 			sayHello(conn, object.userId, object.username)
@@ -97,7 +100,7 @@ var wsServer = ws.createServer(function (conn) {
         }
 		else
 		{
-			
+			sendUnknownType(conn, object.userId, object.username, messageType)
 		}
 		
 		
@@ -107,6 +110,26 @@ var wsServer = ws.createServer(function (conn) {
     })
 }).listen(3000)
 
+function sendUnknownType(conn, target, username, messageType)
+{
+	logger.debug("Target \"" + target + "\" sent unknown message type \"" + messageType + "\".")
+	var sendTarget = target
+	var sendMessageType = "player"
+	var messageObject = {
+		type: "event",
+		bookmark: 225,
+		content: {
+		}
+	}
+	
+	messageObject.content[target] = "'" + messageType +"' is not a known message type!"
+	
+	var messageToSend = sendMessageType + "," +
+						sendTarget + "," + 
+						JSON.stringify(messageObject)
+
+	conn.sendText(messageToSend)
+}
 
 function sendChatMessage(conn, username, content) {
 	logger.info(username + " sent chat message \"" + content + "\"")
@@ -187,7 +210,7 @@ function sendHelp(conn, target, username)
 		}
 	}
 	
-	messageObject.content[target] = "The following commands are supported: [/help, /go, /exits]"
+	messageObject.content[target] = "The following commands are supported: [/help, /go, /exits, /inventory, /examine]"
 	
 	var messageToSend = sendMessageType + "," +
 						sendTarget + "," + 

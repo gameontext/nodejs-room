@@ -1,7 +1,10 @@
 var ws = require("nodejs-websocket")
 var async = require("async")
+var sleep = require("sleep")
 
-var helloMessage = 'roomHello,bsPlayer,{"username":"bsPlayer","userId":"bsPlayer"}'
+var destinationURL = "ws://localhost:3000"
+
+var helloMessage = 'roomHello,TheNodeRoom,{"username":"bsPlayer","userId":"bsPlayer"}'
 var helloReply = 'player,bsPlayer,{"type":"location","name":"The Node Room","description":"This room is filled with little JavaScripts running around everywhere.","exits":{"W":"You see a door to the west that looks like it goes somewhere."},"pockets":[],"objects":[],"bookmark":5}'
 var helloAnnounce = 'player,*,{"type":"event","content":{"*":"bsPlayer enters the room."},"bookmark":51}'
 
@@ -23,14 +26,19 @@ var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":
 var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
 
 var helpMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/help"}'
-var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits]"}}'
+var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits, /inventory, /examine]"}}'
 	
 var inventoryMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/inventory"}'
 var inventoryReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"You may have been carrying something, but you lost it cause everything is so asynchronous."}}'
 
 var examineMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
 var examineReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"There\'s nothing in here to really examine."}}'
-	
+
+var unknownMessageType = 'barfbarf,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
+var unknownMessageTypeReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":225,"content":{"dummy:AnonymousGoogleUser":"\'barfbarf\' is not a known message type!"}}'
+
+var messageNotDirectedAtRoom = 'room,TheRecRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
+
 	
 var sawHello = false
 var sawAnnounce = false
@@ -38,7 +46,7 @@ var sawGoResponse = false
 var sawGoAnnounce = false
 async.series([
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(helloMessage)
 	  })
@@ -63,7 +71,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(chatMessage)
 	  })
@@ -77,7 +85,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(unknownCommand)
 	  })
@@ -91,13 +99,11 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(unknownDirection)
 	  })
 	  connection.on("text", function(str) {
-		  console.log(str)
-		  console.log(unknownDirResponse)
 		  if (str == unknownDirResponse)
 		  {
 			  console.log("When we send an unknown direction, it cusses us out.")
@@ -107,7 +113,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(goodbyeMessage)
 	  })
@@ -121,7 +127,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(goDirection)
 	  })
@@ -136,7 +142,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(exitsMessage)
 	  })
@@ -150,7 +156,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(helpMessage)
 	  })
@@ -164,7 +170,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(inventoryMessage)
 	  })
@@ -178,7 +184,7 @@ async.series([
 	  })
   },
   function(callback){
-	  var connection = ws.connect("ws://localhost:3000")
+	  var connection = ws.connect(destinationURL)
 	  connection.on("connect", function() {
 		  connection.sendText(examineMessage)
 	  })
@@ -190,5 +196,49 @@ async.series([
 			  callback()
 		  }
 	  })
+  },
+  function(callback){
+	  var connection = ws.connect(destinationURL)
+	  connection.on("connect", function() {
+		  connection.sendText(unknownMessageType)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == unknownMessageTypeReply)
+		  {
+			  console.log("When we send an unknown message type, the server lets us know.")
+			  connection.close()
+			  callback()
+		  }
+	  })
+  },
+  function(outerCallback){
+	  var success = true
+	  var connection = ws.connect(destinationURL)
+	  connection.on("text", function(str) {
+		  console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
+		  success = false
+	  })
+	  
+	  connection.on("connect", function() {
+		  async.series([
+            function(callback) {
+            	connection.sendText(messageNotDirectedAtRoom)
+            	callback()
+            },
+            function(callback) {
+            	sleep.sleep(1)
+            	callback()
+            },
+            function(callback) {
+            	if (success)
+            	{
+            		console.log("We sent a message that wasn't directed at our room, and it did not reply.")
+            	}
+            	connection.close()
+            	outerCallback()
+            }
+         ])
+	  })
+	  
   }
 ]);

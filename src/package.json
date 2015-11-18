@@ -4,7 +4,8 @@
   "devDependencies": {
     "nodejs-websocket": "*",
     "async": "*",
-    "winston": "*"
+    "winston": "*",
+    "sleep": "*"
   },
   "dependencies": {
   	"nodejs-websocket": "*",
