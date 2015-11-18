@@ -10,7 +10,14 @@ var logger = new winston.Logger({
     ]
   });
 
-logger.info("Registering with the concierge...")
+var exits = [
+ {
+     name: "W",
+     longName: "West",
+     room: "RecRoom",
+     description: "You see a door to the west that looks like it goes somewhere."
+   }
+]
 
 var registration = {
   roomName: "TheNodeRoom",
@@ -27,41 +34,39 @@ var registration = {
   }
 }
 
-logger.debug("Registration object: " + JSON.stringify(registration))
-
-var exits = [
- {
-     name: "W",
-     longName: "West",
-     room: "RecRoom",
-     description: "You see a door to the west that looks like it goes somewhere."
-   }
-]
-
-var options = {
-  host: 'game-on.org',
-  path: '/concierge/registerRoom',
-  method: 'POST',
-  headers: {
-	  'Content-Type':'application/json'
-  }
-};
-
-callback = function(response) {
-  var str = ''
-  response.on('data', function (chunk) {
-    str += chunk;
-  });
-
-  response.on('end', function () {
-    logger.debug("Received response: " + str);
-  });
+function register()
+{
+	logger.info("Registering with the concierge...")
+	
+	logger.debug("Registration object: " + JSON.stringify(registration))
+	
+	var options = {
+	  host: 'game-on.org',
+	  path: '/concierge/registerRoom',
+	  method: 'POST',
+	  headers: {
+		  'Content-Type':'application/json'
+	  }
+	};
+	
+	callback = function(response) {
+	  var str = ''
+	  response.on('data', function (chunk) {
+	    str += chunk;
+	  });
+	
+	  response.on('end', function () {
+	    logger.debug("Received response: " + str);
+	  });
+	}
+	var req = http.request(options, callback);
+	
+	req.write(JSON.stringify(registration));
+	req.end();
 }
-var req = http.request(options, callback);
 
-req.write(JSON.stringify(registration));
-req.end();
-
+setInterval(register, 60000)
+register()
 
 var wsServer = ws.createServer(function (conn) {
     conn.on("text", function (incoming) {
