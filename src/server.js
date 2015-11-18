@@ -72,7 +72,15 @@ var wsServer = ws.createServer(function (conn) {
 		var messageType = incoming.substr(0,typeEnd)
 		var target = incoming.substr(typeEnd+1, targetEnd-typeEnd-1)
 		var objectStr = incoming.substr(targetEnd+1)
-		var object = JSON.parse(objectStr)
+		var object = {}
+		try
+    	{
+			object = JSON.parse(objectStr)
+    	}
+    	catch (err)
+    	{
+    		logger.error("Got improper json: " + objectStr)
+    	}
 		
 		logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
 		

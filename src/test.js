@@ -39,6 +39,9 @@ var unknownMessageTypeReply = 'player,dummy:AnonymousGoogleUser,{"type":"event",
 
 var messageNotDirectedAtRoom = 'room,TheRecRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
 
+var messageWithInvalidJSON = 'room,TheRecRoom,{""}'
+	
+var screweyMessage = 'I AM BATSHIT CRAZY!'
 	
 var sawHello = false
 var sawAnnounce = false
@@ -236,9 +239,38 @@ async.series([
             	}
             	connection.close()
             	outerCallback()
-            }
-         ])
+            } //check for success
+         ]) //series
+	  }) //on connect
+  },
+  function(callback){
+	  var connection = ws.connect(destinationURL)
+	  connection.on("connect", function() {
+		  connection.sendText(messageWithInvalidJSON)
+		  connection.sendText(inventoryMessage)
 	  })
-	  
+	  connection.on("text", function(str) {
+		  if (str == inventoryReply)
+		  {
+			  console.log("We sent a message with bad JSON and the room still handled our next message gracefully.")
+			  connection.close()
+			  callback()
+		  }
+	  })
+  },
+  function(callback){
+	  var connection = ws.connect(destinationURL)
+	  connection.on("connect", function() {
+		  connection.sendText(screweyMessage)
+		  connection.sendText(inventoryMessage)
+	  })
+	  connection.on("text", function(str) {
+		  if (str == inventoryReply)
+		  {
+			  console.log("We sent a totally improperly formatted message, and the room handled our next message with grace.")
+			  connection.close()
+			  callback()
+		  }
+	  })
   }
 ]);
