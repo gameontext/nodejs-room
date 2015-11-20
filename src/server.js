@@ -283,7 +283,8 @@ function parseGoCommand(conn, target, username, content)
 	var myexit = {}
 	for (var j=0;j<exits.length;j++)
 	{
-		if (exits[j].name === exitName)
+		if (exits[j].name.toUpperCase() === exitName.toUpperCase() ||
+			exits[j].longName.toUpperCase() == exitName.toUpperCase())
 		{
 			found = true
 			myexit = exits[j]
