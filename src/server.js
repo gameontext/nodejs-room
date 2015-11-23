@@ -418,4 +418,9 @@ function broadcast(message) {
     })
 }
 
+process.on('uncaughtException', function(err) {
+    // handle the error safely
+    console.log("UNCAUGHT EXCEPTION! " + err)
+})
+
 logger.info("The WebSocket server is listening...")
