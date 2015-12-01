@@ -1,5 +1,6 @@
 var ws = require("nodejs-websocket")
 var http = require("http")
+var crypto = require("crypto")
 var winston = require('winston');
 
 var logger = new winston.Logger({
@@ -37,12 +38,21 @@ var registration = {
 function register()
 {
 	logger.info("Registering with the concierge...")
+	var key = process.env.CONCIERGE_KEY
+	var body = JSON.stringify(registration)
+	var timestamp = new Date().getTime()
+	var queryParams = 'serviceID=roomRegistration&stamp=' + timestamp
+	logger.info("Timestamp: " + timestamp)
+	logger.info("Query Parameters: " + queryParams)
 	
 	logger.debug("Registration object: " + JSON.stringify(registration))
 	
+	
+	var hash = crypto.createHmac('sha256', process.env.CONCIERGE_KEY).update(queryParams).digest('base64')
+	
 	var options = {
 	  host: 'game-on.org',
-	  path: '/concierge/registerRoom',
+	  path: '/concierge/registerRoom?' + queryParams + '&apikey=' + hash,
 	  method: 'POST',
 	  headers: {
 		  'Content-Type':'application/json'
