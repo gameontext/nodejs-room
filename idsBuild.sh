@@ -4,7 +4,7 @@
 # This script is only intended to run in the IBM DevOps Services Pipeline Environment.
 #
 
-#echo Informing slack...
+echo Informing slack...
 curl -X 'POST' --silent --data-binary '{"text":"A new build for the Node.js room has started."}' $WEBHOOK > /dev/null
 mkdir dockercfg ; cd dockercfg
 echo Downloading Docker requirements..
@@ -21,4 +21,4 @@ echo Stopping the existing container...
 ./docker stop -t 0 gameon-room-nodejs || true
 ./docker rm gameon-room-nodejs || true
 echo Starting the new container...
-./docker run -d -p 5000:3000 -e ADMIN_PASSWORD=$ADMIN_PASSWORD -e LOGGING_DOCKER_HOST=$LOGGING_DOCKER_HOST -e CONCIERGE_KEY=$CONCIERGE_KEY --name=gameon-room-nodejs gameon-room-nodejs
+./docker run -d -p 5000:3000 -e -e LOGSTASH_ENDPOINT=$LOGSTASH_ENDPOINT -e LOGSTASH_CERT="$LOGSTASH_CERT" -e LOGSTASH_KEY="$LOGSTASH_KEY" -e CONCIERGE_KEY=$CONCIERGE_KEY --name=gameon-room-nodejs gameon-room-nodejs
