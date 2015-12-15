@@ -11,23 +11,23 @@ var helloAnnounce = 'player,*,{"type":"event","content":{"*":"bsPlayer enters th
 var chatMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"chats"}'
 var chatAnnounce = 'player,*,{"type":"chat","username":"AnonymousGoogleUser","content":"chats","bookmark":92}'
 
-var unknownCommand = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/plwef"}'	
+var unknownCommand = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/plwef"}'
 var unknownCmdResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"Node.js looked at your command, and barfed."}}'
 
-var unknownDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go E"}'	
+var unknownDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go E"}'
 var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"There isn\'t an exit with that name, genius."},"bookmark":1002}'
 
-var goDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go W"}'	
+var goDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go W"}'
 var goResponse = 'playerLocation,dummy:AnonymousGoogleUser,{"type":"exit","exitId":"W","content":"You head West","bookmark":97}'
-	
+
 var goodbyeMessage = 'roomGoodbye,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser"}'
 var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"AnonymousGoogleUser leaves the room."},"bookmark":1001}'
-var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'	
+var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'
 var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
 
 var helpMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/help"}'
 var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits, /inventory, /examine]"}}'
-	
+
 var inventoryMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/inventory"}'
 var inventoryReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"You may have been carrying something, but you lost it cause everything is so asynchronous."}}'
 
@@ -40,237 +40,237 @@ var unknownMessageTypeReply = 'player,dummy:AnonymousGoogleUser,{"type":"event",
 var messageNotDirectedAtRoom = 'room,TheRecRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/examine"}'
 
 var messageWithInvalidJSON = 'room,TheRecRoom,{""}'
-	
+
 var screweyMessage = 'I AM BATSHIT CRAZY!'
-	
+
 var sawHello = false
 var sawAnnounce = false
 var sawGoResponse = false
 var sawGoAnnounce = false
 async.series([
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(helloMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == helloReply)
-		  {
-			  sawHello = true
-			  console.log("The room said hello.")
-		  }
-		  else if (str == helloAnnounce)
-		  {
-			  console.log("And announced our arrival!")
-			  sawAnnounce = true
-		  }
-		  
-	      if (sawHello && sawAnnounce)
-	      {
-			  connection.close()
-			  console.log("roomHello is working.")
-			  callback()
-	      }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(helloMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == helloReply)
+      {
+        sawHello = true
+        console.log("The room said hello.")
+      }
+      else if (str == helloAnnounce)
+      {
+        console.log("And announced our arrival!")
+        sawAnnounce = true
+      }
+
+        if (sawHello && sawAnnounce)
+        {
+        connection.close()
+        console.log("roomHello is working.")
+        callback()
+        }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(chatMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == chatAnnounce)
-		  {
-			  console.log("When we send a chat message, the room announces it.")
-			  connection.close()
-			  callback()  
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(chatMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == chatAnnounce)
+      {
+        console.log("When we send a chat message, the room announces it.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(unknownCommand)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == unknownCmdResponse)
-		  {
-			  console.log("When we send an unknown command, the room 'barfs' as expected.")
-			  connection.close()
-			  callback()  
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(unknownCommand)
+    })
+    connection.on("text", function(str) {
+      if (str == unknownCmdResponse)
+      {
+        console.log("When we send an unknown command, the room 'barfs' as expected.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(unknownDirection)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == unknownDirResponse)
-		  {
-			  console.log("When we send an unknown direction, it cusses us out.")
-			  connection.close()
-			  callback()  
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(unknownDirection)
+    })
+    connection.on("text", function(str) {
+      if (str == unknownDirResponse)
+      {
+        console.log("When we send an unknown direction, it cusses us out.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(goodbyeMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == goodbyeAnnounce)
-		  {
-			  console.log("The room announced that we left when we did.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(goodbyeMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == goodbyeAnnounce)
+      {
+        console.log("The room announced that we left when we did.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(goDirection)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == goResponse)
-		  {
-			  sawGoResponse = true
-			  console.log("The room told us we were leaving...")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(goDirection)
+    })
+    connection.on("text", function(str) {
+      if (str == goResponse)
+      {
+        sawGoResponse = true
+        console.log("The room told us we were leaving...")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(exitsMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == exitsReply)
-		  {
-			  console.log("The room told us the right exits.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(exitsMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == exitsReply)
+      {
+        console.log("The room told us the right exits.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(helpMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == helpReply)
-		  {
-			  console.log("And tells us the right help information.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(helpMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == helpReply)
+      {
+        console.log("And tells us the right help information.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(inventoryMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == inventoryReply)
-		  {
-			  console.log("Inventory works (such as it is).")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(inventoryMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == inventoryReply)
+      {
+        console.log("Inventory works (such as it is).")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(examineMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == examineReply)
-		  {
-			  console.log("Examining works.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(examineMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == examineReply)
+      {
+        console.log("Examining works.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(unknownMessageType)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == unknownMessageTypeReply)
-		  {
-			  console.log("When we send an unknown message type, the server lets us know.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(unknownMessageType)
+    })
+    connection.on("text", function(str) {
+      if (str == unknownMessageTypeReply)
+      {
+        console.log("When we send an unknown message type, the server lets us know.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(outerCallback){
-	  var success = true
-	  var connection = ws.connect(destinationURL)
-	  connection.on("text", function(str) {
-		  console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
-		  success = false
-	  })
-	  
-	  connection.on("connect", function() {
-		  async.series([
+    var success = true
+    var connection = ws.connect(destinationURL)
+    connection.on("text", function(str) {
+      console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
+      success = false
+    })
+
+    connection.on("connect", function() {
+      async.series([
             function(callback) {
-            	connection.sendText(messageNotDirectedAtRoom)
-            	callback()
+              connection.sendText(messageNotDirectedAtRoom)
+              callback()
             },
             function(callback) {
-            	sleep.sleep(1)
-            	callback()
+              sleep.sleep(1)
+              callback()
             },
             function(callback) {
-            	if (success)
-            	{
-            		console.log("We sent a message that wasn't directed at our room, and it did not reply.")
-            	}
-            	connection.close()
-            	outerCallback()
+              if (success)
+              {
+                console.log("We sent a message that wasn't directed at our room, and it did not reply.")
+              }
+              connection.close()
+              outerCallback()
             } //check for success
          ]) //series
-	  }) //on connect
+    }) //on connect
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(messageWithInvalidJSON)
-		  connection.sendText(inventoryMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == inventoryReply)
-		  {
-			  console.log("We sent a message with bad JSON and the room still handled our next message gracefully.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(messageWithInvalidJSON)
+      connection.sendText(inventoryMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == inventoryReply)
+      {
+        console.log("We sent a message with bad JSON and the room still handled our next message gracefully.")
+        connection.close()
+        callback()
+      }
+    })
   },
   function(callback){
-	  var connection = ws.connect(destinationURL)
-	  connection.on("connect", function() {
-		  connection.sendText(screweyMessage)
-		  connection.sendText(inventoryMessage)
-	  })
-	  connection.on("text", function(str) {
-		  if (str == inventoryReply)
-		  {
-			  console.log("We sent a totally improperly formatted message, and the room handled our next message with grace.")
-			  connection.close()
-			  callback()
-		  }
-	  })
+    var connection = ws.connect(destinationURL)
+    connection.on("connect", function() {
+      connection.sendText(screweyMessage)
+      connection.sendText(inventoryMessage)
+    })
+    connection.on("text", function(str) {
+      if (str == inventoryReply)
+      {
+        console.log("We sent a totally improperly formatted message, and the room handled our next message with grace.")
+        connection.close()
+        callback()
+      }
+    })
   }
 ]);

@@ -8,8 +8,8 @@
     "sleep": "*"
   },
   "dependencies": {
-  	"nodejs-websocket": "*",
-  	"winston": "*"
+    "nodejs-websocket": "*",
+    "winston": "*"
   },
   "engines": {
     "node": ">=0.10.0"
