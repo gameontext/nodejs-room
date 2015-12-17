@@ -1,5 +1,5 @@
 var ws = require("nodejs-websocket")
-var http = require("http")
+var https = require("https")
 var crypto = require("crypto")
 var winston = require('winston');
 
@@ -69,7 +69,7 @@ function register()
       logger.debug("Received response: " + str);
     });
   }
-  var req = http.request(options, callback);
+  var req = https.request(options, callback);
 
   req.write(JSON.stringify(registration));
   req.end();
