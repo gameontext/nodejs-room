@@ -26,6 +26,6 @@ echo Stopping the existing container...
 ./docker stop -t 0 gameon-room-nodejs || true
 ./docker rm gameon-room-nodejs || true
 echo Starting the new container...
-./docker run -d -p 5000:3000 -e LOGSTASH_ENDPOINT=$LOGSTASH_ENDPOINT -e LOGSTASH_CERT="$LOGSTASH_CERT" -e LOGSTASH_KEY="$LOGSTASH_KEY" -e CONCIERGE_KEY=$CONCIERGE_KEY --name=gameon-room-nodejs gameon-room-nodejs
+./docker run -d -p 5000:3000 --link=etcd -e ETCDCTL_ENDPOINT=http://etcd:4001 --name=gameon-room-nodejs gameon-room-nodejs
 
 rm -rf dockercfg
