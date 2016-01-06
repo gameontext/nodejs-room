@@ -41,7 +41,7 @@ function register()
   var key = process.env.CONCIERGE_KEY
   var body = JSON.stringify(registration)
   var timestamp = new Date().getTime()
-  var queryParams = 'serviceID=roomRegistration&stamp=' + timestamp
+  var queryParams = 'stamp=' + timestamp
   logger.info("Timestamp: " + timestamp)
   logger.info("Query Parameters: " + queryParams)
 
@@ -58,7 +58,7 @@ function register()
       'Content-Type':'application/json'
     }
   };
-
+  
   callback = function(response) {
     var str = ''
     response.on('data', function (chunk) {
