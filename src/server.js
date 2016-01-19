@@ -52,7 +52,7 @@ function register()
 
   var options = {
     host: 'game-on.org',
-    path: '/concierge/registerRoom?' + queryParams + '&apikey=' + hash,
+    path: '/concierge/registerRoom?' + queryParams + '&apikey=' + encodeURIComponent(hash),
     method: 'POST',
     headers: {
       'Content-Type':'application/json'
