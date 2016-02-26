@@ -6,9 +6,9 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   tar xzf etcd-v2.2.2-linux-amd64.tar.gz etcd-v2.2.2-linux-amd64/etcdctl --strip-components=1
   rm etcd-v2.2.2-linux-amd64.tar.gz
   mv etcdctl /usr/local/bin/etcdctl
-  
-  export CONCIERGE_KEY=$(etcdctl get /passwords/concierge-key)
-  
+
+  export MAP_KEY=$(etcdctl get /passwords/map-key)
+
   cd /opt/room
   echo "Starting the node server"
   node server.js &

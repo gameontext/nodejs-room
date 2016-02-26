@@ -3,6 +3,23 @@ var https = require("https")
 var crypto = require("crypto")
 var winston = require('winston');
 
+// User credentials
+var gameonUID = "game-on.org";
+var gameonAPIKey = process.env.MAP_KEY;
+
+// Room Details
+// Your room's name
+var theRoomName = "TheNodeRoom";
+var fullName = "The Node-JS Room";
+// The endpoint for this room, as reachable by the game-on.org servers.
+var endpoint = "wss://game-on.org/roomjs";
+// internal listen port, mapped by docker.
+var listenPort = 3000;
+
+//are we retrying a registration?
+var registrationRetry = null;
+
+
 var logger = new winston.Logger({
   level: 'debug',
   transports: [
@@ -11,71 +28,100 @@ var logger = new winston.Logger({
   ]
 });
 
-var exits = [
-  {
-    name: "W",
-    longName: "West",
-    room: "RecRoom",
-    description: "You see a door to the west that looks like it goes somewhere."
-  }
-]
-
 var registration = {
-  roomName: "TheNodeRoom",
-  exits: [
+  "fullName": fullName,
+  "name": theRoomName,
+  "connectionDetails": {
+    "type": "websocket",
+    "target": endpoint,
+  },
+  "doors":
     {
-      name: "W",
-      room: "RecRoom",
-      description: "You see a door to the west that looks like it goes somewhere."
-    }
-  ],
-  attributes: {
-    endPoint: "wss://game-on.org/roomjs",
-    startLocation: "false"
-  }
+      "n": "A tiny small door, that doesn't look particularly heavy",
+      "s": "A curious small round door, that seems lightweight",
+      "e": "A door that seems thin, it's almost fluttering in the breeze",
+      "w": "A glowing doorway, mist is rolling out from the gap underneath",
+    },
 }
 
 function register()
 {
-  logger.info("Registering with the concierge...")
-  var key = process.env.CONCIERGE_KEY
-  var body = JSON.stringify(registration)
-  var timestamp = new Date().getTime()
-  var queryParams = 'stamp=' + timestamp
-  logger.info("Timestamp: " + timestamp)
-  logger.info("Query Parameters: " + queryParams)
+  if(registrationRetry != null) {
+      logger.info("Processing registration retry, cancelling timer repeat.");
+      clearInterval(registrationRetry);
+      registrationRetry = null;
+  }
 
+  logger.info("Registering with the map service...")
+
+  var body = JSON.stringify(registration)
+  var now = new Date()
+  var timestamp = new Date(now).toISOString()
+
+  logger.info("Now!: " + now)
+  logger.info("Timestamp: " + timestamp)
   logger.debug("Registration object: " + JSON.stringify(registration))
 
+  var bodyHash = crypto.createHash('sha256')
+  bodyHash = bodyHash.update(body).digest('base64')
+  console.log("BODY HASH " + bodyHash)
 
-  var hash = crypto.createHmac('sha256', process.env.CONCIERGE_KEY).update(queryParams).digest('base64')
+  var allParams = gameonUID+timestamp+bodyHash
+  var hash = crypto.createHmac('sha256', gameonAPIKey).update(allParams).digest('base64')
+
+  console.log("HASH : " + hash)
 
   var options = {
     host: 'game-on.org',
-    path: '/concierge/registerRoom?' + queryParams + '&apikey=' + encodeURIComponent(hash),
+    path: '/map/v1/sites',
     method: 'POST',
     headers: {
-      'Content-Type':'application/json'
+      'Content-Type':'application/json',
+      'gameon-id':gameonUID,
+      'gameon-date': timestamp,
+      'gameon-sig-body': bodyHash,
+      'gameon-signature': hash
     }
   };
-  
-  callback = function(response) {
-    var str = ''
-    response.on('data', function (chunk) {
-      str += chunk;
-    });
 
-    response.on('end', function () {
-      logger.debug("Received response: " + str);
-    });
+  logger.debug("Options: " + JSON.stringify(options))
+
+  callback = function(response) {
+    if(response.statusCode == 201){
+      var str = ''
+      response.on('data', function (chunk) {
+        str += chunk;
+      });
+      response.on('end', function () {
+        logger.debug("Received response: " + str);
+      });
+    }else{
+      //201 means created.. and there's json we can read.
+      //409 means we were already registered..
+      //403 means our auth failed.
+      //503 means the map service was unavailable.
+
+      if(response.statusCode == 403){
+        logger.error("Registration request failed, auth was invalid: "+response.statusMessage);
+      }else if(response.statusCode == 409){
+        logger.info("No need to register, already registered.");
+        //we could do a query here to check the existing registration matches the one we attempted.
+      }else if(response.statusCode == 503){
+        logger.info("Map Service unavailable, queing a retry.");
+        registrationRetry = setInterval(register,30000);
+      }
+    }
   }
   var req = https.request(options, callback);
 
   req.write(JSON.stringify(registration));
   req.end();
+
+  req.on('error', (e) => {
+    logger.error("Error with https request "+e);
+  });
 }
 
-setInterval(register, 60000)
 register()
 
 var wsServer = ws.createServer(function (conn) {
@@ -86,50 +132,50 @@ var wsServer = ws.createServer(function (conn) {
 
     var messageType = incoming.substr(0,typeEnd)
     var target = incoming.substr(typeEnd+1, targetEnd-typeEnd-1)
-    var objectStr = incoming.substr(targetEnd+1)
-    var object = {}
-    try
-    {
-      object = JSON.parse(objectStr)
-    }
-    catch (err)
-    {
-      logger.error("Got improper json: " + objectStr)
-    }
 
-    logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
-
-    if (target != "TheNodeRoom")
-      return
-
-    if (messageType === "roomHello")
-    {
-      sayHello(conn, object.userId, object.username)
-    }
-    else if (messageType === "room")
-    {
-      if (object.content.indexOf('/') == 0)
+    if(target === theRoomName) {
+      var objectStr = incoming.substr(targetEnd+1)
+      var object = {}
+      try
       {
-        parseCommand(conn, object.userId, object.username, object.content)
+        object = JSON.parse(objectStr)
+      }
+      catch (err)
+      {
+        logger.error("Got improper json: " + objectStr)
+      }
+
+      logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
+
+      if (messageType === "roomHello")
+      {
+        sayHello(conn, object.userId, object.username)
+      }
+      else if (messageType === "room")
+      {
+        if (object.content && object.content.indexOf('/') == 0)
+        {
+          parseCommand(conn, object.userId, object.username, object.content)
+        }
+        else
+        {
+          sendChatMessage(conn, object.username, object.content)
+        }
+      }
+      else if (messageType === "roomGoodbye")
+      {
+        sayGoodbye(conn, object.userId, object.username)
       }
       else
       {
-        sendChatMessage(conn, object.username, object.content)
+        sendUnknownType(conn, object.userId, object.username, messageType)
       }
-    }
-    else if (messageType === "roomGoodbye")
-    {
-      sayGoodbye(conn, object.userId, object.username)
-    }
-    else
-    {
-      sendUnknownType(conn, object.userId, object.username, messageType)
     }
   })
   conn.on("close", function (code, reason) {
     logger.debug("Connection closed.")
   })
-}).listen(3000);
+}).listen(listenPort);
 
 function sendUnknownType(conn, target, username, messageType)
 {
@@ -161,14 +207,14 @@ function sendChatMessage(conn, username, content) {
           bookmark: 92
         }
 
-        var sendMessageType = "player"
-        var sendTarget = "*"
+  var sendMessageType = "player"
+  var sendTarget = "*"
 
-        var messageText = sendMessageType + "," +
-                  sendTarget + "," +
-                  JSON.stringify(responseObject)
+  var messageText = sendMessageType + "," +
+            sendTarget + "," +
+            JSON.stringify(responseObject)
 
-    broadcast(messageText)
+  broadcast(messageText)
 }
 
 function parseCommand(conn, target, username, content) {
@@ -177,21 +223,17 @@ function parseCommand(conn, target, username, content) {
   {
     parseGoCommand(conn, target, username, content)
   }
-  else if (content.substr(1, 5) == "exits")
+  else if (content.substr(1, 7) == "examine")
   {
-    sendExits(conn, target, username)
+    sendExamine(conn, target, username)
   }
-  else if (content.substr(1, 4) == "help")
+  else if (content.substr(1, 4) == "look")
   {
-    sendHelp(conn, target, username)
+    sendLook(conn, target, username)
   }
   else if (content.substr(1, 9) == "inventory")
   {
     sendInventory(conn, target, username)
-  }
-  else if (content.substr(1, 7) == "examine")
-  {
-    sendExamine(conn, target, username)
   }
   else
   {
@@ -199,29 +241,15 @@ function parseCommand(conn, target, username, content) {
   }
 }
 
-function sendExits(conn, target, username)
+function sendLook(conn, target, username)
 {
-  logger.debug("Target \"" + target + "\" asked for exits.")
-  var sendTarget = target
-  var sendMessageType = "player"
-  var messageObject = {
-    type: "exits",
-    bookmark: 2222,
-    content: {
-      W: "You see a door to the west that looks like it goes somewhere."
-    }
-  }
-
-  var messageToSend = sendMessageType + "," +
-            sendTarget + "," +
-            JSON.stringify(messageObject)
-
-  conn.sendText(messageToSend)
+  logger.debug("Target \"" + target + "\" asked for look.")
+  sendLocation(conn,target,username)
 }
 
-function sendHelp(conn, target, username)
+function sendExamine(conn, target, username)
 {
-  logger.debug("Target \"" + target + "\" asked for info.")
+  logger.debug("Target \"" + target + "\" asked for examination.")
   var sendTarget = target
   var sendMessageType = "player"
   var messageObject = {
@@ -231,7 +259,7 @@ function sendHelp(conn, target, username)
     }
   }
 
-  messageObject.content[target] = "The following commands are supported: [/help, /go, /exits, /inventory, /examine]"
+  messageObject.content[target] = "There's nothing in here to really examine."
 
   var messageToSend = sendMessageType + "," +
             sendTarget + "," +
@@ -261,55 +289,41 @@ function sendInventory(conn, target, username)
   conn.sendText(messageToSend)
 }
 
-function sendExamine(conn, target, username)
-{
-  logger.debug("Target \"" + target + "\" asked for examination.")
-  var sendTarget = target
-  var sendMessageType = "player"
-  var messageObject = {
-    type: "event",
-    bookmark: 2223,
-    content: {
-    }
-  }
-
-  messageObject.content[target] = "There's nothing in here to really examine."
-
-  var messageToSend = sendMessageType + "," +
-            sendTarget + "," +
-            JSON.stringify(messageObject)
-
-  conn.sendText(messageToSend)
-}
-
 function parseGoCommand(conn, target, username, content)
 {
   var exitName = content.substr(4)
+
   logger.info("Player \"" + username + "\" wants to go direction \"" + exitName + "\"")
 
-  var found = false
-  var myexit = {}
-  for (var j=0;j<exits.length;j++)
-  {
-    if (exits[j].name.toUpperCase() === exitName.toUpperCase() ||
-      exits[j].longName.toUpperCase() == exitName.toUpperCase())
-    {
-      found = true
-      myexit = exits[j]
-      break;
-    }
+  var exitId;
+  if(exitName.toUpperCase() === "NORTH" || exitName.toUpperCase() === "N"){
+    exitId = 'n'
+    exitName = 'North'
+  }
+  else if(exitName.toUpperCase() == "SOUTH" || exitName.toUpperCase() === "S"){
+    exitId = 's'
+    exitName = 'South'
+  }
+  else if(exitName.toUpperCase() == "EAST" || exitName.toUpperCase() === "E"){
+    exitId = 'e'
+    exitName = 'East'
+  }
+  else if(exitName.toUpperCase() == "WEST" || exitName.toUpperCase() === "W"){
+    exitId = 'w'
+    exitName = 'West'
   }
 
-  if (found)
-  {
+  logger.debug("Registration: " + registration.doors[exitId])
+
+  if(registration.doors[exitId]){
     logger.info("That direction exists, telling \"" + username + "\" that they've gone that direction.")
     var sendTarget = target
     var sendMessageType = "playerLocation"
     var messageObject = {
-      type: "exit",
-      exitId: myexit.name,
-      content: "You head " + myexit.longName,
-      bookmark: 97
+      "type": "exit",
+      "exitId": exitId,
+      "content": "You head " + exitName,
+      "bookmark": 6019
     }
 
     var messageText = sendMessageType + "," +
@@ -329,7 +343,7 @@ function parseGoCommand(conn, target, username, content)
       content: {
 
       },
-      bookmark: 1002
+      bookmark: 5302
     }
 
     messageObject.content[target] = "There isn't an exit with that name, genius."
@@ -380,17 +394,12 @@ function sayGoodbye(conn, target, username) {
   broadcast(broadcastMessage)
 }
 
-function sayHello(conn, target, username) {
-  logger.info("Saying hello to \"" + target + "\"")
+function sendLocation(conn, target, username) {
   var responseObject = {
       type: "location",
-      name: "The Node Room",
+      name: theRoomName,
+      fullName: fullName,
       description: "This room is filled with little JavaScripts running around everywhere.",
-      exits: {
-        "W": "You see a door to the west that looks like it goes somewhere."
-      },
-      pockets: [],
-      objects: [],
       bookmark: 5
     }
 
@@ -402,6 +411,12 @@ function sayHello(conn, target, username) {
               JSON.stringify(responseObject)
 
   conn.sendText(messageText)
+
+}
+
+function sayHello(conn, target, username) {
+  logger.info("Saying hello to \"" + target + "\"")
+  sendLocation(conn,target,username)
 
   logger.debug("And announcing that \"" + username + "\" has arrived.")
   var broadcastMessageType = "player"
