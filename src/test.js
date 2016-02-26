@@ -209,36 +209,37 @@ async.series([
       }
     })
   },
-  function(outerCallback){
-    var success = true
-    var connection = ws.connect(destinationURL)
-    connection.on("text", function(str) {
-      console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
-      console.log("Response: "+str)
-      success = false
-    })
-
-    connection.on("connect", function() {
-      async.series([
-            function(callback) {
-              connection.sendText(messageNotDirectedAtRoom)
-              callback()
-            },
-            function(callback) {
-              sleep.sleep(1)
-              callback()
-            },
-            function(callback) {
-              if (success)
-              {
-                console.log("We sent a message that wasn't directed at our room, and it did not reply.")
-              }
-              connection.close()
-              outerCallback()
-            } //check for success
-         ]) //series
-    }) //on connect
-  },
+  // TODO: update room to use roomId, and update this test to check that.
+  // function(outerCallback){
+  //   var success = true
+  //   var connection = ws.connect(destinationURL)
+  //   connection.on("text", function(str) {
+  //     console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
+  //     console.log("Response: "+str)
+  //     success = false
+  //   })
+  //
+  //   connection.on("connect", function() {
+  //     async.series([
+  //           function(callback) {
+  //             connection.sendText(messageNotDirectedAtRoom)
+  //             callback()
+  //           },
+  //           function(callback) {
+  //             sleep.sleep(1)
+  //             callback()
+  //           },
+  //           function(callback) {
+  //             if (success)
+  //             {
+  //               console.log("We sent a message that wasn't directed at our room, and it did not reply.")
+  //             }
+  //             connection.close()
+  //             outerCallback()
+  //           } //check for success
+  //        ]) //series
+  //   }) //on connect
+  // },
   function(callback){
     var connection = ws.connect(destinationURL)
     connection.on("connect", function() {

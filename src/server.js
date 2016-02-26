@@ -133,43 +133,41 @@ var wsServer = ws.createServer(function (conn) {
     var messageType = incoming.substr(0,typeEnd)
     var target = incoming.substr(typeEnd+1, targetEnd-typeEnd-1)
 
-    if(target === theRoomName) {
-      var objectStr = incoming.substr(targetEnd+1)
-      var object = {}
-      try
-      {
-        object = JSON.parse(objectStr)
-      }
-      catch (err)
-      {
-        logger.error("Got improper json: " + objectStr)
-      }
+    var objectStr = incoming.substr(targetEnd+1)
+    var object = {}
+    try
+    {
+      object = JSON.parse(objectStr)
+    }
+    catch (err)
+    {
+      logger.error("Got improper json: " + objectStr)
+    }
 
-      logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
+    logger.info("Parsed a message of type \"" + messageType + "\" sent to target \"" + target + "\".")
 
-      if (messageType === "roomHello")
+    if (messageType === "roomHello")
+    {
+      sayHello(conn, object.userId, object.username)
+    }
+    else if (messageType === "room")
+    {
+      if (object.content && object.content.indexOf('/') == 0)
       {
-        sayHello(conn, object.userId, object.username)
-      }
-      else if (messageType === "room")
-      {
-        if (object.content && object.content.indexOf('/') == 0)
-        {
-          parseCommand(conn, object.userId, object.username, object.content)
-        }
-        else
-        {
-          sendChatMessage(conn, object.username, object.content)
-        }
-      }
-      else if (messageType === "roomGoodbye")
-      {
-        sayGoodbye(conn, object.userId, object.username)
+        parseCommand(conn, object.userId, object.username, object.content)
       }
       else
       {
-        sendUnknownType(conn, object.userId, object.username, messageType)
+        sendChatMessage(conn, object.username, object.content)
       }
+    }
+    else if (messageType === "roomGoodbye")
+    {
+      sayGoodbye(conn, object.userId, object.username)
+    }
+    else
+    {
+      sendUnknownType(conn, object.userId, object.username, messageType)
     }
   })
   conn.on("close", function (code, reason) {
