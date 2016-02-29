@@ -5,7 +5,7 @@ var sleep = require("sleep")
 var destinationURL = "ws://localhost:3000"
 
 var helloMessage = 'roomHello,TheNodeRoom,{"username":"bsPlayer","userId":"bsPlayer"}'
-var helloReply = 'player,bsPlayer,{"type":"location","name":"The Node Room","description":"This room is filled with little JavaScripts running around everywhere.","exits":{"W":"You see a door to the west that looks like it goes somewhere."},"pockets":[],"objects":[],"bookmark":5}'
+var helloReply = 'player,bsPlayer,{"type":"location","name":"The Node Room","fullName":"The Node-JS Room","description":"This room is filled with little JavaScripts running around everywhere.","exits":{"W":"You see a door to the west that looks like it goes somewhere."},"bookmark":5}'
 var helloAnnounce = 'player,*,{"type":"event","content":{"*":"bsPlayer enters the room."},"bookmark":51}'
 
 var chatMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"chats"}'
@@ -15,18 +15,13 @@ var unknownCommand = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId
 var unknownCmdResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"Node.js looked at your command, and barfed."}}'
 
 var unknownDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go E"}'
-var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"There isn\'t an exit with that name, genius."},"bookmark":1002}'
+var unknownDirResponse = 'player,dummy:AnonymousGoogleUser,{"type":"event","content":{"dummy:AnonymousGoogleUser":"There isn\'t an exit with that name, genius."},"bookmark":5302}'
 
 var goDirection = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/go W"}'
 var goResponse = 'playerLocation,dummy:AnonymousGoogleUser,{"type":"exit","exitId":"W","content":"You head West","bookmark":97}'
 
 var goodbyeMessage = 'roomGoodbye,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser"}'
 var goodbyeAnnounce = 'player,*,{"type":"event","content":{"*":"AnonymousGoogleUser leaves the room."},"bookmark":1001}'
-var exitsMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/exits"}'
-var exitsReply = 'player,dummy:AnonymousGoogleUser,{"type":"exits","bookmark":2222,"content":{"W":"You see a door to the west that looks like it goes somewhere."}}'
-
-var helpMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/help"}'
-var helpReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"The following commands are supported: [/help, /go, /exits, /inventory, /examine]"}}'
 
 var inventoryMessage = 'room,TheNodeRoom,{"username":"AnonymousGoogleUser","userId":"dummy:AnonymousGoogleUser","content":"/inventory"}'
 var inventoryReply = 'player,dummy:AnonymousGoogleUser,{"type":"event","bookmark":2223,"content":{"dummy:AnonymousGoogleUser":"You may have been carrying something, but you lost it cause everything is so asynchronous."}}'
@@ -214,35 +209,37 @@ async.series([
       }
     })
   },
-  function(outerCallback){
-    var success = true
-    var connection = ws.connect(destinationURL)
-    connection.on("text", function(str) {
-      console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
-      success = false
-    })
-
-    connection.on("connect", function() {
-      async.series([
-            function(callback) {
-              connection.sendText(messageNotDirectedAtRoom)
-              callback()
-            },
-            function(callback) {
-              sleep.sleep(1)
-              callback()
-            },
-            function(callback) {
-              if (success)
-              {
-                console.log("We sent a message that wasn't directed at our room, and it did not reply.")
-              }
-              connection.close()
-              outerCallback()
-            } //check for success
-         ]) //series
-    }) //on connect
-  },
+  // TODO: update room to use roomId, and update this test to check that.
+  // function(outerCallback){
+  //   var success = true
+  //   var connection = ws.connect(destinationURL)
+  //   connection.on("text", function(str) {
+  //     console.log("FAILURE! THE ROOM RESPONDED TO US AND SHOULDNT HAVE!")
+  //     console.log("Response: "+str)
+  //     success = false
+  //   })
+  //
+  //   connection.on("connect", function() {
+  //     async.series([
+  //           function(callback) {
+  //             connection.sendText(messageNotDirectedAtRoom)
+  //             callback()
+  //           },
+  //           function(callback) {
+  //             sleep.sleep(1)
+  //             callback()
+  //           },
+  //           function(callback) {
+  //             if (success)
+  //             {
+  //               console.log("We sent a message that wasn't directed at our room, and it did not reply.")
+  //             }
+  //             connection.close()
+  //             outerCallback()
+  //           } //check for success
+  //        ]) //series
+  //   }) //on connect
+  // },
   function(callback){
     var connection = ws.connect(destinationURL)
     connection.on("connect", function() {
