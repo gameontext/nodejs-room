@@ -1,4 +1,4 @@
-FROM    node:0.10
+FROM    node:4.3
 
 MAINTAINER Ben Smith (benjsmi@us.ibm.com)
 
