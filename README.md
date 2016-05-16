@@ -1,7 +1,6 @@
 # Game On! Node.js Room
 
-See the room node.js service [information page](https://gameontext.gitbooks.io/gameon-gitbook/content/microservices/room-nodejs.html) in the Game On! Docs for more information on how to use this service.
-
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d492e53f342b4001aab7824b9451312e)](https://www.codacy.com/app/gameontext/nodejs-room?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gameontext/nodejs-room&amp;utm_campaign=Badge_Grade)
 
 ## Contributing
 
