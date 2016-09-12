@@ -5,7 +5,7 @@
 #
 
 echo Informing slack...
-curl -X 'POST' --silent --data-binary '{"text":"A new build for the Node.js room has started."}' $WEBHOOK > /dev/null
+curl -X 'POST' --silent --data-binary '{"text":"A new build for the Node.js room has started."}' $SLACK_WEBHOOK_PATH > /dev/null
 
 echo Setting up Docker...
 mkdir dockercfg ; cd dockercfg
