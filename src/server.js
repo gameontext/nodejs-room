@@ -12,7 +12,7 @@ var gameonAPIKey = process.env.MAP_KEY;
 var theRoomName = "TheNodeRoom";
 var fullName = "The Node-JS Room";
 // The endpoint for this room, as reachable by the game-on.org servers.
-var endpoint = "wss://game-on.org/roomjs";
+var endpoint = "wss://gameontext.org/roomjs";
 // internal listen port, mapped by docker.
 var listenPort = 3000;
 
